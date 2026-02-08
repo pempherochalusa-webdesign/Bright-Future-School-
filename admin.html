@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <script>
+if (localStorage.getItem("role") !== "admin") {
+    alert("Access denied! Please login as Admin.");
+    window.location.href = "login.html";
+}
+</script>
+
+<h1 style="text-align:center;">Admin Panel - Registered Students</h1>
+
+<table border="1" width="80%" align="center">
+    <tr>
+        <th>Full Name</th>
+        <th>Class</th>
+        <th>Username</th>
+        <th>Action</th>
+    </tr>
+    <tbody id="studentList"></tbody>
+</table>
+
+<br>
+<center>
+<button onclick="logout()">Logout</button>
+</center>
+
+<script>
+let students = JSON.parse(localStorage.getItem("users")) || [];
+let table = document.getElementById("studentList");
+
+function showStudents() {
+    table.innerHTML = "";
+    for (let i = 0; i < students.length; i++) {
+        let row = `
+            <tr>
+                <td>${students[i].fullname}</td>
+                <td>${students[i].className}</td>
+                <td>${students[i].username}</td>
+                <td><button onclick="deleteStudent(${i})">Delete</button></td>
+            </tr>
+        `;
+        table.innerHTML += row;
+    }
+}
+
+function deleteStudent(index) {
+    if (confirm("Are you sure you want to delete this student?")) {
+        students.splice(index, 1);
+        localStorage.setItem("users", JSON.stringify(students));
+        showStudents();
+    }
+}
+
+function logout() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+}
+
+showStudents();
+</script>
+
+</body>
+</html>

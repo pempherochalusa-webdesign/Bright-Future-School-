@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <script>
+if (localStorage.getItem("role") !== "teacher") {
+    alert("Access denied! Please login as Teacher.");
+    window.location.href = "login.html";
+}
+</script>
+
+<div class="header">
+    <h2>Teacher Dashboard</h2>
+</div>
+
+<div class="container">
+
+<div class="sidebar">
+    <a href="#">Enter Marks</a>
+    <a href="#">Ranking</a>
+    <a href="#" onclick="logout()">Logout</a>
+</div>
+
+<div class="main">
+
+<input type="text" id="searchInput" placeholder="Search student..." 
+       onkeyup="searchStudent()" style="width:100%; padding:10px;">
+
+<h3>Enter Marks</h3>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Username</th>
+        <th>Math</th>
+        <th>English</th>
+        <th>Science</th>
+        <th>Average</th>
+        <th>Grade</th>
+        <th>Action</th>
+    </tr>
+    <tbody id="studentList"></tbody>
+</table>
+
+<h3>Student Ranking</h3>
+
+<table>
+    <tr>
+        <th>Position</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Average</th>
+        <th>Grade</th>
+    </tr>
+    <tbody id="rankingList"></tbody>
+</table>
+
+</div>
+</div>
+
+<script>
+let students = JSON.parse(localStorage.getItem("users")) || [];
+let marks = JSON.parse(localStorage.getItem("marks")) || [];
+
+let table = document.getElementById("studentList");
+
+function showStudents() {
+    table.innerHTML = "";
+    for (let i = 0; i < students.length; i++) {
+        let studentMarks = marks.find(m => m.username === students[i].username) || {};
+
+        let row = `
+        <tr>
+            <td>${students[i].fullname}</td>
+            <td>${students[i].className}</td>
+            <td>${students[i].username}</td>
+            <td><input type="number" id="math${i}" value="${studentMarks.math || ''}"></td>
+            <td><input type="number" id="english${i}" value="${studentMarks.english || ''}"></td>
+            <td><input type="number" id="science${i}" value="${studentMarks.science || ''}"></td>
+            <td>${studentMarks.average || ''}</td>
+            <td>${studentMarks.grade || ''}</td>
+            <td><button onclick="saveMarks(${i})">Save</button></td>
+        </tr>
+        `;
+        table.innerHTML += row;
+    }
+}
+
+function saveMarks(index) {
+    let math = Number(document.getElementById("math" + index).value);
+    let english = Number(document.getElementById("english" + index).value);
+    let science = Number(document.getElementById("science" + index).value);
+
+    let avg = (math + english + science) / 3;
+    let grade = "";
+
+    if (avg >= 80) grade = "A";
+    else if (avg >= 70) grade = "B";
+    else if (avg >= 60) grade = "C";
+    else if (avg >= 50) grade = "D";
+    else grade = "F";
+
+    let student = students[index];
+
+    let studentMark = {
+        username: student.username,
+        math: math,
+        english: english,
+        science: science,
+        average: avg.toFixed(2),
+        grade: grade
+    };
+
+    marks = marks.filter(m => m.username !== student.username);
+    marks.push(studentMark);
+
+    localStorage.setItem("marks", JSON.stringify(marks));
+
+    showStudents();
+    showRanking();
+}
+
+function showRanking() {
+    let rankingTable = document.getElementById("rankingList");
+    rankingTable.innerHTML = "";
+
+    let ranked = marks.filter(m => m.average !== undefined);
+    ranked.sort((a, b) => b.average - a.average);
+
+    for (let i = 0; i < ranked.length; i++) {
+        let student = students.find(s => s.username === ranked[i].username);
+
+        let row = `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${student.fullname}</td>
+            <td>${student.className}</td>
+            <td>${ranked[i].average}</td>
+            <td>${ranked[i].grade}</td>
+        </tr>
+        `;
+        rankingTable.innerHTML += row;
+    }
+}
+
+function searchStudent() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    table.innerHTML = "";
+
+    for (let i = 0; i < students.length; i++) {
+        let studentMarks = marks.find(m => m.username === students[i].username) || {};
+
+        if (
+            students[i].fullname.toLowerCase().includes(input) ||
+            students[i].username.toLowerCase().includes(input)
+        ) {
+            let row = `
+            <tr>
+                <td>${students[i].fullname}</td>
+                <td>${students[i].className}</td>
+                <td>${students[i].username}</td>
+                <td><input type="number" id="math${i}" value="${studentMarks.math || ''}"></td>
+                <td><input type="number" id="english${i}" value="${studentMarks.english || ''}"></td>
+                <td><input type="number" id="science${i}" value="${studentMarks.science || ''}"></td>
+                <td>${studentMarks.average || ''}</td>
+                <td>${studentMarks.grade || ''}</td>
+                <td><button onclick="saveMarks(${i})">Save</button></td>
+            </tr>
+            `;
+            table.innerHTML += row;
+        }
+    }
+}
+
+function logout() {
+    window.location.href = "login.html";
+}
+
+showStudents();
+showRanking();
+</script>
+
+</body>
+</html>

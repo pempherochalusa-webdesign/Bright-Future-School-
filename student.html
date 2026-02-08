@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+</head>
+<body>
+  <script>
+if (localStorage.getItem("role") !== "student") {
+    alert("Access denied! Please login as Student.");
+    window.location.href = "login.html";
+}
+</script>
+
+<h1>Student Dashboard</h1>
+
+<p id="info"></p>
+<h2>Your Marks</h2>
+<p id="marks"></p>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+let user = JSON.parse(localStorage.getItem("currentUser"));
+let marks = JSON.parse(localStorage.getItem("marks")) || [];
+
+if (!user) {
+    window.location.href = "login.html";
+}
+
+document.getElementById("info").innerHTML =
+    "Name: " + user.fullname + "<br>" +
+    "Class: " + user.className;
+
+let myMarks = marks.find(m => m.username === user.username);
+
+if (myMarks) {
+    document.getElementById("marks").innerHTML =
+        "Math: " + myMarks.math + "<br>" +
+        "English: " + myMarks.english + "<br>" +
+        "Science: " + myMarks.science + "<br><br>" +
+        "<b>Average:</b> " + myMarks.average + "<br>" +
+        "<b>Grade:</b> " + myMarks.grade;
+} else {
+    document.getElementById("marks").innerHTML = "No marks yet.";
+}
+
+function logout() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
